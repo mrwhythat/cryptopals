@@ -4,12 +4,14 @@
 # decrypt AES ECB mode encrypted text
 # ------------------------------------------------------------------------------
 from base64 import b64decode
-from Crypto.Cipher import AES
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend as backend
 
 
 # solution
 def aes_ecb_decrypt(ctext, key):
-    blockdata = AES.new(key, AES.MODE_ECB).decrypt(ctext)
+    cipher = Cipher(algorithms.AES(key), modes.ECB(), backend()).decryptor()
+    blockdata = cipher.update(ctext) + cipher.finalize()
     bytesdata = blockdata[:-int(blockdata[-1])]  # padding
     return bytesdata.decode('utf-8')
 
