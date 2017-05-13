@@ -5,7 +5,8 @@
 # ------------------------------------------------------------------------------
 import struct
 import base64
-from Crypto.Cipher import AES
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
 
 from c02 import bytes_xor
 
@@ -37,12 +38,12 @@ def _keystream_xor(data, key, nonce):
 
 
 def _keystream(key, nonce):
-    cipher = AES.new(key, AES.MODE_ECB)
+    c = Cipher(algorithms.AES(key), modes.ECB(), default_backend()).encryptor()
     nonce_bytes = struct.pack('<Q', nonce)
     for count in range(2 ** 64 - 1):
         count_bytes = struct.pack('<Q', count)
         block = nonce_bytes + count_bytes
-        yield cipher.encrypt(block)
+        yield c.update(block)
     raise KeyStreamEndException()
 
 # testing

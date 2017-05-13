@@ -3,7 +3,8 @@
 #
 # CBC mode implementation
 # ------------------------------------------------------------------------------
-from Crypto.Cipher import AES
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
 
 from c02 import bytes_xor
 from c09 import pkcs7_pad, pkcs7_trim
@@ -15,12 +16,14 @@ BLK_SIZE = 16
 
 def _aes_ecb_encrypt(ptext, key):
     '''encrypt one block in ecb mode'''
-    return AES.new(key, AES.MODE_ECB).encrypt(ptext)
+    e = Cipher(algorithms.AES(key), modes.ECB(), default_backend()).encryptor()
+    return e.update(ptext) + e.finalize()
 
 
 def _aes_ecb_decrypt(ctext, key):
     '''decrypt one block in ecb mode'''
-    return AES.new(key, AES.MODE_ECB).decrypt(ctext)
+    d = Cipher(algorithms.AES(key), modes.ECB(), default_backend()).decryptor()
+    return d.update(ctext) + d.finalize()
 
 
 def aes_ecb_encrypt(ptext, key):
@@ -49,7 +52,7 @@ def aes_cbc_decrypt(ctext, key, iv):
 
 # testing
 if __name__ == "__main__":
-    key = 'YELLOW SUBMARINE'
+    key = b'YELLOW SUBMARINE'
     iv = b'\x00' * BLK_SIZE
     v = b'AAAAAAAAAAAAAAA'
     print(aes_ecb_encrypt(v + b'\x00', key).hex())
